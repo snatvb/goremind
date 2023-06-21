@@ -25,3 +25,10 @@ func WordsControls() *telego.InlineKeyboardMarkup {
 func BackButton() telego.InlineKeyboardButton {
 	return tu.InlineKeyboardButton("Back").WithCallbackData(Back)
 }
+
+func BackOnly() *telego.InlineKeyboardMarkup {
+	return tu.InlineKeyboard(
+		tu.InlineKeyboardRow(
+			BackButton(),
+		))
+}

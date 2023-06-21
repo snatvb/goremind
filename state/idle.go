@@ -16,6 +16,8 @@ func (state Idle) Handle(_ *Context, event string, data interface{}) State {
 		return AddingWord{}
 	case events.WordList:
 		return WordsView{}
+	case events.RemoveWord:
+		return RemoveWord{}
 	default:
 		return state
 	}

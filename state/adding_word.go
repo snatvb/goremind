@@ -1,6 +1,7 @@
 package state
 
 import (
+	"eng-bot/keyboard"
 	"eng-bot/state/events"
 
 	"github.com/mymmrac/telego"
@@ -11,6 +12,10 @@ type AddingWord struct {
 }
 
 func (state AddingWord) Handle(ctx *Context, event string, data interface{}) State {
+	if event == events.Back {
+		return Idle{}
+	}
+
 	if event == events.Message {
 		msg := data.(*telego.Message)
 		hasWord := ctx.Store.HasWord(msg.Text, msg.Chat.ID)
@@ -20,7 +25,7 @@ func (state AddingWord) Handle(ctx *Context, event string, data interface{}) Sta
 				tu.Entity("Word "),
 				tu.Entity(msg.Text).Code(),
 				tu.Entity(" already exists"),
-			))
+			).WithReplyMarkup(keyboard.BackOnly()))
 			return state
 		}
 		return AddingTranslation{word: msg.Text}

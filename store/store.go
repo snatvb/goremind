@@ -64,3 +64,17 @@ func (s *Store) GetWords(chatId int64, offset int, limit int) []db.WordModel {
 	}
 	return words
 }
+
+// remove word from db
+func (s *Store) RemoveWord(word string, chatId int64) bool {
+	ctx := context.Background()
+	_, err := s.client.Word.FindMany(
+		db.Word.ChatID.Equals(types.BigInt(chatId)),
+		db.Word.Word.Equals(word),
+	).Delete().Exec(ctx)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}

@@ -44,8 +44,9 @@ func main() {
 		_ = bot.AnswerCallbackQuery(tu.CallbackQuery(query.ID).WithText("Started adding word"))
 	}, th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(keyboard.AddWord))
 
-	subscribeKeyboard(handler, users, keyboard.WordList, events.WordList)
 	subscribeKeyboard(handler, users, keyboard.Back, events.Back)
+	subscribeKeyboard(handler, users, keyboard.WordList, events.WordList)
+	subscribeKeyboard(handler, users, keyboard.RemoveWord, events.RemoveWord)
 
 	handler.Handle(func(bot *telego.Bot, update telego.Update) {
 		// Send message

@@ -4,18 +4,10 @@ import (
 	"eng-bot/keyboard"
 	"eng-bot/state/events"
 
-	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 )
 
 type WordsView struct {
-}
-
-func Controls() *telego.InlineKeyboardMarkup {
-	return tu.InlineKeyboard(
-		tu.InlineKeyboardRow(
-			keyboard.BackButton(),
-		))
 }
 
 func (state WordsView) Handle(_ *Context, event string, data interface{}) State {
@@ -34,7 +26,7 @@ func (state WordsView) OnEnter(fsm *FSM, context *Context, from State) {
 	context.Bot.SendMessage(tu.Message(
 		tu.ID(context.ChatId),
 		wordsTextsMsg,
-	).WithReplyMarkup(Controls()))
+	).WithReplyMarkup(keyboard.BackOnly()))
 }
 
 func (s WordsView) Name() string {

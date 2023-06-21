@@ -1,6 +1,7 @@
 package state
 
 import (
+	"eng-bot/keyboard"
 	"eng-bot/state/events"
 	"log"
 
@@ -13,6 +14,10 @@ type AddingTranslation struct {
 }
 
 func (state AddingTranslation) Handle(ctx *Context, event string, data interface{}) State {
+	if event == events.Back {
+		return AddingWord{}
+	}
+
 	if event == events.Message {
 		msg := data.(*telego.Message)
 		log.Printf("AddingTranslation: %s", msg.Text)
@@ -27,14 +32,20 @@ func (state AddingTranslation) Handle(ctx *Context, event string, data interface
 		}
 
 		log.Printf("FAILED AddingTranslation: %s", state.word)
-		ctx.Bot.SendMessage(tu.Message(tu.ID(msg.Chat.ID), "Error adding word"))
+		ctx.Bot.SendMessage(
+			tu.Message(tu.ID(msg.Chat.ID), "Error adding word").WithReplyMarkup(keyboard.BackOnly()),
+		)
 		return Idle{}
 	}
 	return state
 }
 
 func (state AddingTranslation) OnEnter(fsm *FSM, context *Context, from State) {
-	context.Bot.SendMessage(tu.MessageWithEntities(tu.ID(context.ChatId), tu.Entity("Write translation for the word "), tu.Entity(state.word).Code()))
+	context.Bot.SendMessage(tu.MessageWithEntities(
+		tu.ID(context.ChatId),
+		tu.Entity("Write translation for the word "),
+		tu.Entity(state.word).Code(),
+	).WithReplyMarkup(keyboard.BackOnly()))
 }
 
 func (state AddingTranslation) Name() string {
