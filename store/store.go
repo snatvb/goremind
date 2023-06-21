@@ -56,3 +56,21 @@ func (s *Store) LastWord() *Word {
 	s.db.Last(&word)
 	return &word
 }
+
+func (s *Store) AddNewWord(word string, translate string, chatId int64) bool {
+	var exists bool
+	_ = s.db.Where("word = ?", word).Limit(1).Find(&exists).Error
+	if !exists {
+		wordStruct := s.NewWord(word, translate, chatId)
+		s.db.Create(wordStruct)
+		return true
+	}
+
+	return false
+}
+
+func (s *Store) HasWord(word string, chatId int64) bool {
+	var exists bool
+	_ = s.db.Model(&Word{}).Select("count(*) > 0").Where("`word` = ? AND `chatId` = ?", word, chatId).Find(&exists).Error
+	return exists
+}

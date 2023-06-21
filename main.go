@@ -18,9 +18,8 @@ import (
 func main() {
 	loadEnv()
 	db := store.New(&store.Options{DbPath: os.Getenv("DB_FILENAME")})
-	users := clients.New(db)
-
 	bot := newBot()
+	users := clients.New(db, bot)
 
 	me, err := bot.GetMe()
 	if err != nil {
@@ -56,9 +55,10 @@ func main() {
 	handler.HandleMessage(func(bot *telego.Bot, message telego.Message) {
 		user := users.GetOrAdd(message.Chat.ID)
 		user.State.Handle(events.Message, &message)
-		if user.State.CurrentState().Name() == "AddingWord" {
+		currentState := user.State.CurrentState().Name()
+		if currentState == "AddingTranslation" {
 			_, _ = bot.SendMessage(tu.Message(tu.ID(message.Chat.ID), "Write translation"))
-		} else if user.State.CurrentState().Name() == "AddingWordSuccess" {
+		} else if currentState == "AddingWordSuccess" {
 			word := db.LastWord()
 			_, _ = bot.SendMessage(tu.Message(tu.ID(message.Chat.ID), fmt.Sprintf("Word %s added!", word.Word)))
 			user.State.Handle(events.Reset, nil)

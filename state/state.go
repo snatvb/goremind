@@ -3,10 +3,13 @@ package state
 import (
 	"eng-bot/store"
 	"fmt"
+
+	"github.com/mymmrac/telego"
 )
 
 type context struct {
 	store *store.Store
+	bot   *telego.Bot
 }
 
 type State interface {
@@ -19,7 +22,7 @@ type FSM struct {
 	state   State
 }
 
-func NewFSM(store *store.Store) *FSM {
+func NewFSM(store *store.Store, bot *telego.Bot) *FSM {
 	return &FSM{
 		context: &context{
 			store: store,
