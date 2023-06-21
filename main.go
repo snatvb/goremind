@@ -44,6 +44,9 @@ func main() {
 		_ = bot.AnswerCallbackQuery(tu.CallbackQuery(query.ID).WithText("Started adding word"))
 	}, th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(keyboard.AddWord))
 
+	subscribeKeyboard(handler, users, keyboard.WordList, events.WordList)
+	subscribeKeyboard(handler, users, keyboard.Back, events.Back)
+
 	handler.Handle(func(bot *telego.Bot, update telego.Update) {
 		// Send message
 		_, _ = bot.SendMessage(tu.Message(
@@ -74,4 +77,12 @@ func loadEnv() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+}
+
+func subscribeKeyboard(handler *th.BotHandler, users *clients.Clients, keyboardEvent string, stateEvent string) {
+	handler.HandleCallbackQuery(func(bot *telego.Bot, query telego.CallbackQuery) {
+		user := users.GetOrAdd(query.Message.Chat.ID)
+		user.State.Handle(stateEvent, nil)
+		_ = bot.AnswerCallbackQuery(tu.CallbackQuery(query.ID).WithText("Done"))
+	}, th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(keyboardEvent))
 }

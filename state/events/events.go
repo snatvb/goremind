@@ -6,4 +6,6 @@ const (
 	AddWord        = "AddWord"
 	AddDescription = "AddDescription"
 	RemoveWord     = "RemoveWord"
+	WordList       = "WordList"
+	Back           = "Back"
 )

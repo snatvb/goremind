@@ -9,6 +9,7 @@ const (
 	AddWord    string = "AddWord"
 	RemoveWord        = "RemoveWord"
 	WordList          = "WordList"
+	Back              = "Back"
 )
 
 func WordsControls() *telego.InlineKeyboardMarkup {
@@ -19,4 +20,8 @@ func WordsControls() *telego.InlineKeyboardMarkup {
 		), tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("Words").WithCallbackData(WordList),
 		))
+}
+
+func BackButton() telego.InlineKeyboardButton {
+	return tu.InlineKeyboardButton("Back").WithCallbackData(Back)
 }

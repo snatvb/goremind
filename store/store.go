@@ -51,3 +51,16 @@ func (s *Store) HasWord(word string, chatId int64) bool {
 	}
 	return true
 }
+
+// get words list from db with limit and offset
+func (s *Store) GetWords(chatId int64, offset int, limit int) []db.WordModel {
+	ctx := context.Background()
+	words, err := s.client.Word.FindMany(
+		db.Word.ChatID.Equals(types.BigInt(chatId)),
+	).Skip(offset).Take(limit).Exec(ctx)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return words
+}

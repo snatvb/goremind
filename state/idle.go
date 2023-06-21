@@ -14,6 +14,8 @@ func (state Idle) Handle(_ *Context, event string, data interface{}) State {
 	switch event {
 	case events.AddWord:
 		return AddingWord{}
+	case events.WordList:
+		return WordsView{}
 	default:
 		return state
 	}
