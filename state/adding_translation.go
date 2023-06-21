@@ -2,25 +2,39 @@ package state
 
 import (
 	"eng-bot/state/events"
+	"log"
 
 	"github.com/mymmrac/telego"
+	tu "github.com/mymmrac/telego/telegoutil"
 )
 
 type AddingTranslation struct {
 	word string
 }
 
-func (state AddingTranslation) Handle(ctx *context, event string, data interface{}) State {
+func (state AddingTranslation) Handle(ctx *Context, event string, data interface{}) State {
 	if event == events.Message {
 		msg := data.(*telego.Message)
-		println("AddingTranslation")
-		word := ctx.store.NewWord(state.word, msg.Text, msg.Chat.ID)
-		ctx.store.Save(word)
-		println("Saved")
+		log.Printf("AddingTranslation: %s", msg.Text)
+		if ctx.Store.HasWord(state.word, msg.Chat.ID) {
+			log.Printf("DEBUG AddingTranslation: %s already exists", state.word)
+			return state
+		}
+		success := ctx.Store.AddNewWord(state.word, msg.Text, msg.Chat.ID)
+		if success {
+			log.Printf("AddingTranslation: %s added", state.word)
+			return AddingWordSuccess{}
+		}
 
-		return AddingWordSuccess{}
+		log.Printf("FAILED AddingTranslation: %s", state.word)
+		ctx.Bot.SendMessage(tu.Message(tu.ID(msg.Chat.ID), "Error adding word"))
+		return Idle{}
 	}
 	return state
+}
+
+func (state AddingTranslation) OnEnter(fsm *FSM, context *Context, from State) {
+	context.Bot.SendMessage(tu.MessageWithEntities(tu.ID(context.ChatId), tu.Entity("Write translation for the word "), tu.Entity(state.word).Code()))
 }
 
 func (state AddingTranslation) Name() string {

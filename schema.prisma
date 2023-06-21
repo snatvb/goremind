@@ -1,0 +1,20 @@
+datasource db {
+  // could be postgresql or mysql
+  provider = "sqlite"
+  url      = "file:database.db"
+}
+
+generator db {
+  provider = "go run github.com/steebchen/prisma-client-go"
+}
+
+model Word {
+  id            String   @id @default(cuid())
+  chatId        BigInt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  word          String
+  translate     String
+  rememberLevel Int      @default(0)
+  remindedAt    DateTime @default(now())
+}

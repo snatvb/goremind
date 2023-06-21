@@ -1,43 +1,58 @@
 package state
 
 import (
+	"eng-bot/state/events"
 	"eng-bot/store"
 	"fmt"
 
 	"github.com/mymmrac/telego"
 )
 
-type context struct {
-	store *store.Store
-	bot   *telego.Bot
+type Context struct {
+	Store  *store.Store
+	Bot    *telego.Bot
+	ChatId int64
 }
 
 type State interface {
-	Handle(context *context, event string, data interface{}) State
+	Handle(context *Context, event string, data interface{}) State
 	Name() string
 }
 
+type EnterableState interface {
+	OnEnter(fsm *FSM, context *Context, from State)
+}
+
 type FSM struct {
-	context *context
+	context *Context
 	state   State
 }
 
-func NewFSM(store *store.Store, bot *telego.Bot) *FSM {
+func NewFSM(context *Context) *FSM {
+	fmt.Printf("New FSM %d\n", context.ChatId)
 	return &FSM{
-		context: &context{
-			store: store,
-		},
-		state: Idle{},
+		context: context,
+		state:   Idle{},
 	}
 }
 
 func (fsm *FSM) Handle(event string, data interface{}) {
-	if event == "Reset" {
+	beforeUpdate := fsm.state
+
+	if event == events.Reset {
 		fsm.state = Idle{}
 	} else {
 		fsm.state = fsm.state.Handle(fsm.context, event, data)
 	}
-	fmt.Printf("New state: %+v\n", fsm.state.Name())
+
+	if beforeUpdate != fsm.state {
+		if enterableState, ok := fsm.state.(EnterableState); ok {
+			fmt.Printf("Call enter: %+v\n", fsm.state.Name())
+			enterableState.OnEnter(fsm, fsm.context, beforeUpdate)
+		}
+	}
+
+	fmt.Printf("After handle state: %+v\n", fsm.state.Name())
 }
 
 func (fsm *FSM) CurrentState() State {

@@ -10,18 +10,27 @@ import (
 type AddingWord struct {
 }
 
-func (state AddingWord) Handle(ctx *context, event string, data interface{}) State {
+func (state AddingWord) Handle(ctx *Context, event string, data interface{}) State {
 	if event == events.Message {
 		msg := data.(*telego.Message)
-		hasWord := ctx.store.HasWord(msg.Text, msg.Chat.ID)
+		hasWord := ctx.Store.HasWord(msg.Text, msg.Chat.ID)
 		if hasWord {
-			ctx.bot.SendMessage(tu.Message(tu.ID(msg.Chat.ID), "Word already exists"))
+			ctx.Bot.SendMessage(tu.MessageWithEntities(
+				tu.ID(msg.Chat.ID),
+				tu.Entity("Word "),
+				tu.Entity(msg.Text).Code(),
+				tu.Entity(" already exists"),
+			))
 			return state
 		}
 		return AddingTranslation{word: msg.Text}
 	}
 
 	return state
+}
+
+func (state AddingWord) OnEnter(fsm *FSM, context *Context, from State) {
+	context.Bot.SendMessage(tu.Message(tu.ID(context.ChatId), "Write word that you want to add"))
 }
 
 func (state AddingWord) Name() string {

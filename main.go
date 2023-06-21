@@ -17,7 +17,7 @@ import (
 
 func main() {
 	loadEnv()
-	db := store.New(&store.Options{DbPath: os.Getenv("DB_FILENAME")})
+	db := store.New()
 	bot := newBot()
 	users := clients.New(db, bot)
 
@@ -41,7 +41,7 @@ func main() {
 	handler.HandleCallbackQuery(func(bot *telego.Bot, query telego.CallbackQuery) {
 		user := users.GetOrAdd(query.Message.Chat.ID)
 		user.State.Handle(events.AddWord, nil)
-		_, _ = bot.SendMessage(tu.Message(tu.ID(query.Message.Chat.ID), "Write word that you want to add"))
+		_ = bot.AnswerCallbackQuery(tu.CallbackQuery(query.ID).WithText("Started adding word"))
 	}, th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(keyboard.AddWord))
 
 	handler.Handle(func(bot *telego.Bot, update telego.Update) {
@@ -49,20 +49,12 @@ func main() {
 		_, _ = bot.SendMessage(tu.Message(
 			tu.ID(update.Message.Chat.ID),
 			fmt.Sprintf("Hello %s! I'll help you to remember english words.", update.Message.From.FirstName),
-		).WithReplyMarkup(keyboard.CreateWords()))
+		).WithReplyMarkup(keyboard.WordsControls()))
 	}, th.CommandEqual("start"))
 
 	handler.HandleMessage(func(bot *telego.Bot, message telego.Message) {
 		user := users.GetOrAdd(message.Chat.ID)
 		user.State.Handle(events.Message, &message)
-		currentState := user.State.CurrentState().Name()
-		if currentState == "AddingTranslation" {
-			_, _ = bot.SendMessage(tu.Message(tu.ID(message.Chat.ID), "Write translation"))
-		} else if currentState == "AddingWordSuccess" {
-			word := db.LastWord()
-			_, _ = bot.SendMessage(tu.Message(tu.ID(message.Chat.ID), fmt.Sprintf("Word %s added!", word.Word)))
-			user.State.Handle(events.Reset, nil)
-		}
 	})
 
 	handler.Start()

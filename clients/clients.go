@@ -45,8 +45,12 @@ func (clients *Clients) GetOrAdd(id int64) *Client {
 	client := clients.Get(id)
 	if client == nil {
 		client = &Client{
-			Id:    id,
-			State: *state.NewFSM(clients.store, clients.bot),
+			Id: id,
+			State: *state.NewFSM(&state.Context{
+				Store:  clients.store,
+				Bot:    clients.bot,
+				ChatId: id,
+			}),
 		}
 		clients.clients[id] = client
 	}
