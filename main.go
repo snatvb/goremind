@@ -1,8 +1,8 @@
 package main
 
 import (
+	"eng-bot/clients"
 	"eng-bot/keyboard"
-	"eng-bot/state"
 	"eng-bot/state/events"
 	"eng-bot/store"
 	"fmt"
@@ -18,7 +18,7 @@ import (
 func main() {
 	loadEnv()
 	db := store.New(&store.Options{DbPath: os.Getenv("DB_FILENAME")})
-	fsm := state.NewFSM(db)
+	users := clients.New(db)
 
 	bot := newBot()
 
@@ -36,37 +36,12 @@ func main() {
 		fmt.Println(err)
 	}
 
-	// lastMessage := db.LastMessage()
-	// fmt.Printf("Last message: %+v\n", lastMessage.Text)
-
-	// handler.HandleMessage(func(bot *telego.Bot, message telego.Message) {
-	// 	// Get chat ID from the message
-	// 	chatID := tu.ID(message.Chat.ID)
-
-	// 	msg := tu.Message(
-	// 		tu.ID(chatID.ID),
-	// 		"Hello World",
-	// 	)
-
-	// 	// Copy sent messages back to the user
-	// 	_, err := bot.SendMessage(msg)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 	}
-	// 	db.Save(&state.Message{ChatId: message.Chat.ID, Text: message.Text})
-
-	// 	fmt.Printf("Message: %+v\n", message.Text)
-	// })
-
 	defer handler.Stop()
 	defer bot.StopLongPolling()
 
-	// handleAddWord := func(bot *telego.Bot, message telego.Message) {
-	// 	fsm.Handle(events.AddDescription, message.Text)
-	// }
-
 	handler.HandleCallbackQuery(func(bot *telego.Bot, query telego.CallbackQuery) {
-		fsm.Handle(events.AddWord, nil)
+		user := users.GetOrAdd(query.Message.Chat.ID)
+		user.State.Handle(events.AddWord, nil)
 		_, _ = bot.SendMessage(tu.Message(tu.ID(query.Message.Chat.ID), "Write word that you want to add"))
 	}, th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(keyboard.AddWord))
 
@@ -79,13 +54,14 @@ func main() {
 	}, th.CommandEqual("start"))
 
 	handler.HandleMessage(func(bot *telego.Bot, message telego.Message) {
-		fsm.Handle(events.Message, &message)
-		if fsm.CurrentState().Name() == "AddingWord" {
+		user := users.GetOrAdd(message.Chat.ID)
+		user.State.Handle(events.Message, &message)
+		if user.State.CurrentState().Name() == "AddingWord" {
 			_, _ = bot.SendMessage(tu.Message(tu.ID(message.Chat.ID), "Write translation"))
-		} else if fsm.CurrentState().Name() == "AddingWordSuccess" {
+		} else if user.State.CurrentState().Name() == "AddingWordSuccess" {
 			word := db.LastWord()
 			_, _ = bot.SendMessage(tu.Message(tu.ID(message.Chat.ID), fmt.Sprintf("Word %s added!", word.Word)))
-			fsm.Handle(events.Reset, nil)
+			user.State.Handle(events.Reset, nil)
 		}
 	})
 
