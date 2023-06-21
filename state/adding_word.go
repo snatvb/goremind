@@ -35,7 +35,10 @@ func (state AddingWord) Handle(ctx *Context, event string, data interface{}) Sta
 }
 
 func (state AddingWord) OnEnter(fsm *FSM, context *Context, from State) {
-	context.Bot.SendMessage(tu.Message(tu.ID(context.ChatId), "Write word that you want to add"))
+	context.Bot.SendMessage(tu.Message(
+		tu.ID(context.ChatId),
+		"Write word that you want to add",
+	).WithReplyMarkup(keyboard.BackOnly()))
 }
 
 func (state AddingWord) Name() string {
