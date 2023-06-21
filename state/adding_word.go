@@ -24,7 +24,7 @@ func (state AddingWord) Handle(ctx *Context, event string, data interface{}) Sta
 				tu.ID(msg.Chat.ID),
 				tu.Entity("Word "),
 				tu.Entity(msg.Text).Code(),
-				tu.Entity(" already exists"),
+				tu.Entity(" already exists. Please, try another word."),
 			).WithReplyMarkup(keyboard.BackOnly()))
 			return state
 		}
