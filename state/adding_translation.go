@@ -33,7 +33,7 @@ func (state AddingTranslation) Handle(ctx *Context, event string, data interface
 
 		log.Printf("FAILED AddingTranslation: %s", state.word)
 		ctx.Bot.SendMessage(
-			tu.Message(tu.ID(msg.Chat.ID), "Error adding word").WithReplyMarkup(keyboard.BackOnly()),
+			tu.Message(tu.ID(msg.Chat.ID), "Error adding word"),
 		)
 		return Idle{}
 	}
