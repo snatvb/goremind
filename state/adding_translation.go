@@ -4,6 +4,7 @@ import (
 	"goreminder/keyboard"
 	"goreminder/state/events"
 	"log"
+	"time"
 
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
@@ -25,7 +26,10 @@ func (state AddingTranslation) Handle(ctx *Context, event string, data interface
 			log.Printf("DEBUG AddingTranslation: %s already exists", state.word)
 			return state
 		}
-		success := ctx.Store.AddNewWord(state.word, msg.Text, msg.Chat.ID)
+
+		now := time.Now()
+		inHour := now.Add(time.Minute)
+		success := ctx.Store.AddNewWord(state.word, msg.Text, msg.Chat.ID, inHour)
 		if success {
 			log.Printf("AddingTranslation: %s added", state.word)
 			return AddingWordSuccess{}

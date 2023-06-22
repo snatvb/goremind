@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"goreminder/clients"
 	"goreminder/keyboard"
+	"goreminder/reminder"
 	"goreminder/state/events"
 	"goreminder/store"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
@@ -20,6 +22,13 @@ func main() {
 	db := store.New()
 	bot := newBot()
 	users := clients.New(db, bot)
+	remind := reminder.Reminder{
+		Options: reminder.Options{
+			Interval: 5 * time.Second,
+		},
+		Store:   db,
+		Clients: users,
+	}
 
 	me, err := bot.GetMe()
 	if err != nil {
@@ -35,8 +44,12 @@ func main() {
 		fmt.Println(err)
 	}
 
+	remind.Start()
 	defer handler.Stop()
 	defer bot.StopLongPolling()
+	defer remind.Stop()
+
+	fmt.Printf("Wait...\n")
 
 	handler.HandleCallbackQuery(func(bot *telego.Bot, query telego.CallbackQuery) {
 		user := users.GetOrAdd(query.Message.Chat.ID)

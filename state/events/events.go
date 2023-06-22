@@ -8,4 +8,5 @@ const (
 	RemoveWord     = "RemoveWord"
 	WordList       = "WordList"
 	Back           = "Back"
+	Remind         = "Remind"
 )

@@ -16,5 +16,15 @@ model Word {
   word          String
   translate     String
   rememberLevel Int      @default(0)
+  nextRemindAt  DateTime
   remindedAt    DateTime @default(now())
+  Users         User?    @relation(fields: [usersChatId], references: [chatId])
+  usersChatId   BigInt?
+}
+
+model User {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chatId    BigInt   @id
+  words     Word[]
 }
