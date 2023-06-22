@@ -1,8 +1,8 @@
 package state
 
 import (
-	"eng-bot/keyboard"
-	"eng-bot/state/events"
+	"goreminder/keyboard"
+	"goreminder/state/events"
 	"log"
 
 	"github.com/mymmrac/telego"

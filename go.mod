@@ -1,6 +1,6 @@
 go 1.20
 
-module eng-bot
+module goreminder
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
@@ -20,6 +20,4 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.47.0 // indirect
 	golang.org/x/text v0.10.0 // indirect
-	gorm.io/driver/sqlite v1.5.2 // indirect
-	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55 // indirect
 )

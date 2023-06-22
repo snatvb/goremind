@@ -1,9 +1,9 @@
 package state
 
 import (
-	"eng-bot/state/events"
-	"eng-bot/store"
 	"fmt"
+	"goreminder/state/events"
+	"goreminder/store"
 
 	"github.com/mymmrac/telego"
 )

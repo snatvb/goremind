@@ -1,8 +1,8 @@
 package clients
 
 import (
-	"eng-bot/state"
-	"eng-bot/store"
+	"goreminder/state"
+	"goreminder/store"
 
 	"github.com/mymmrac/telego"
 )

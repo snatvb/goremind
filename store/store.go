@@ -2,7 +2,7 @@ package store
 
 import (
 	"context"
-	"eng-bot/db"
+	"goreminder/db"
 	"log"
 
 	"github.com/steebchen/prisma-client-go/runtime/types"

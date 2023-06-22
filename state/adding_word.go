@@ -1,8 +1,8 @@
 package state
 
 import (
-	"eng-bot/keyboard"
-	"eng-bot/state/events"
+	"goreminder/keyboard"
+	"goreminder/state/events"
 
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
@@ -19,16 +19,16 @@ func (state AddingWord) Handle(ctx *Context, event string, data interface{}) Sta
 	if event == events.Message {
 		msg := data.(*telego.Message)
 		hasWord := ctx.Store.HasWord(msg.Text, msg.Chat.ID)
-		if hasWord {
-			ctx.Bot.SendMessage(tu.MessageWithEntities(
-				tu.ID(msg.Chat.ID),
-				tu.Entity("Word "),
-				tu.Entity(msg.Text).Code(),
-				tu.Entity(" already exists. Please, try another word."),
-			).WithReplyMarkup(keyboard.BackOnly()))
-			return state
+		if !hasWord {
+			return AddingTranslation{word: msg.Text}
 		}
-		return AddingTranslation{word: msg.Text}
+		ctx.Bot.SendMessage(tu.MessageWithEntities(
+			tu.ID(msg.Chat.ID),
+			tu.Entity("Word "),
+			tu.Entity(msg.Text).Code(),
+			tu.Entity(" already exists. Please, try another word."),
+		).WithReplyMarkup(keyboard.BackOnly()))
+		return state
 	}
 
 	return state

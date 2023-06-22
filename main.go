@@ -1,11 +1,11 @@
 package main
 
 import (
-	"eng-bot/clients"
-	"eng-bot/keyboard"
-	"eng-bot/state/events"
-	"eng-bot/store"
 	"fmt"
+	"goreminder/clients"
+	"goreminder/keyboard"
+	"goreminder/state/events"
+	"goreminder/store"
 	"log"
 	"os"
 
