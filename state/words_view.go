@@ -19,15 +19,27 @@ func (state WordsView) Handle(_ *Context, event string, data interface{}) State 
 }
 
 func (state WordsView) OnEnter(fsm *FSM, context *Context, from State) {
-	words := context.Store.GetWords(context.ChatId, 0, 100)
-	wordsTextsMsg := "Words:\n"
+	words := context.Store.GetWords(context.ChatId, 0, 50)
+	var answer []tu.MessageEntityCollection
 	for _, word := range words {
-		wordsTextsMsg += fmt.Sprintf("%s; Level: %d \n", word.Word, word.RememberLevel)
+		answer = append(answer, tu.Entity("Word: "))
+		answer = append(answer, tu.Entity(word.Word).Code())
+		answer = append(answer, tu.Entity("; Level: "))
+		answer = append(answer, tu.Entity(fmt.Sprintf("%d\n", word.RememberLevel)).Bold())
 	}
-	context.Bot.SendMessage(tu.Message(
+	context.Bot.SendMessage(tu.MessageWithEntities(
 		tu.ID(context.ChatId),
-		wordsTextsMsg,
+		answer...,
 	).WithReplyMarkup(keyboard.BackOnly()))
+
+	// wordsTextsMsg := "Words:\n"
+	// for _, word := range words {
+	// 	wordsTextsMsg += fmt.Sprintf("%s; Level: %d \n", word.Word, word.RememberLevel)
+	// }
+	// context.Bot.SendMessage(tu.Message(
+	// 	tu.ID(context.ChatId),
+	// 	wordsTextsMsg,
+	// ).WithReplyMarkup(keyboard.BackOnly()))
 }
 
 func (s WordsView) Name() string {
