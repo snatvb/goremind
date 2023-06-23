@@ -5,6 +5,7 @@ import (
 	"goreminder/db"
 	"goreminder/keyboard"
 	"goreminder/state/events"
+	"goreminder/utils"
 	"strings"
 	"time"
 
@@ -29,17 +30,12 @@ func (state RemindWord) Handle(ctx *Context, event string, data interface{}) Sta
 	return state
 }
 
-// trim and equal strings
-func equalStrings(a, b string) bool {
-	return strings.EqualFold(strings.TrimSpace(a), strings.TrimSpace(b))
-}
-
 func (state RemindWord) handleTranslation(ctx *Context, msg *telego.Message) {
 	translation := state.Word.Translate
 
 	for _, v := range strings.Split(translation, ",") {
 		translation = strings.TrimSpace(v)
-		if equalStrings(msg.Text, translation) {
+		if utils.EqualStrings(msg.Text, translation) {
 			state.handleCorrect(ctx)
 			return
 		}
@@ -53,10 +49,13 @@ func (state RemindWord) handleIncorrect(ctx *Context) {
 	nextRememberAt := time.Now().Add(rememberIn)
 	ctx.Bot.SendMessage(tu.MessageWithEntities(
 		tu.ID(ctx.ChatId),
-		tu.Entity("Incorrect! I remind you in "),
-		tu.Entity(rememberIn.String()).Code(),
-		tu.Entity(".\n Correct answer: "),
-		tu.Entity(state.Word.Translate).Code(),
+		utils.Prepend(
+			utils.StringsToEntities(utils.SplitTranslations(state.Word.Translate)),
+			tu.Entity("Incorrect! I remind you in "),
+			tu.Entity(rememberIn.String()).Code(),
+			tu.Entity(".\nCorrect answer: "),
+			tu.Entity(state.Word.Translate).Code(),
+		)...,
 	))
 
 	res := ctx.Store.UpdateWord(
@@ -69,7 +68,7 @@ func (state RemindWord) handleIncorrect(ctx *Context) {
 		ctx.Bot.SendMessage(tu.MessageWithEntities(
 			tu.ID(ctx.ChatId),
 			tu.Entity("Error: ").Bold(),
-			tu.Entity("Save updated word has been failed").Code(),
+			tu.Entity("Save updated word has been failed"),
 		))
 	}
 }
@@ -95,10 +94,13 @@ func (state RemindWord) handleCorrect(ctx *Context) {
 		nextRememberAt := time.Now().Add(rememberIn)
 		ctx.Bot.SendMessage(tu.MessageWithEntities(
 			tu.ID(ctx.ChatId),
-			tu.Entity("Success! I remind you in "),
-			tu.Entity(rememberIn.String()).Code(),
-			tu.Entity(".\n Correct answer: "),
-			tu.Entity(state.Word.Translate).Code(),
+			utils.Prepend(
+				utils.StringsToEntities(utils.SplitTranslations(state.Word.Translate)),
+				tu.Entity("Success! I remind you in "),
+				tu.Entity(rememberIn.String()).Code(),
+				tu.Entity(".\nTranslations: "),
+				tu.Entity(state.Word.Translate).Code(),
+			)...,
 		))
 
 		res := ctx.Store.UpdateWord(
@@ -123,8 +125,10 @@ func (state RemindWord) handleForgot(ctx *Context) {
 
 	ctx.Bot.SendMessage(tu.MessageWithEntities(
 		tu.ID(ctx.ChatId),
-		tu.Entity("It's ok. You can try again later.\nCorrect answer: "),
-		tu.Entity(state.Word.Translate).Code(),
+		utils.Prepend(
+			utils.StringsToEntities(utils.SplitTranslations(state.Word.Translate)),
+			tu.Entity("It's ok. You can try again later.\nCorrect answer: "),
+		)...,
 	))
 
 	res := ctx.Store.UpdateWord(word, db.Word.NextRemindAt.Set(

@@ -3,6 +3,7 @@ package state
 import (
 	"goreminder/keyboard"
 	"goreminder/state/events"
+	"goreminder/utils"
 	"log"
 	"time"
 
@@ -21,6 +22,7 @@ func (state AddingTranslation) Handle(ctx *Context, event string, data interface
 
 	if event == events.Message {
 		msg := data.(*telego.Message)
+		translations := utils.SplitTranslations(msg.Text)
 		log.Printf("AddingTranslation: %s", msg.Text)
 		if ctx.Store.HasWord(state.word, msg.Chat.ID) {
 			log.Printf("DEBUG AddingTranslation: %s already exists", state.word)
@@ -29,10 +31,10 @@ func (state AddingTranslation) Handle(ctx *Context, event string, data interface
 
 		now := time.Now()
 		inHour := now.Add(time.Minute)
-		success := ctx.Store.AddNewWord(state.word, msg.Text, msg.Chat.ID, inHour)
+		success := ctx.Store.AddNewWord(state.word, utils.JoinStrings(translations), msg.Chat.ID, inHour)
 		if success {
 			log.Printf("AddingTranslation: %s added", state.word)
-			return AddingWordSuccess{}
+			return AddingWordSuccess{Translations: translations}
 		}
 
 		log.Printf("FAILED AddingTranslation: %s", state.word)
