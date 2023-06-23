@@ -7,6 +7,7 @@ import (
 
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
+	"github.com/steebchen/prisma-client-go/runtime/types"
 )
 
 type RemoveWord struct {
@@ -21,7 +22,7 @@ func (state RemoveWord) Handle(context *Context, event string, data interface{})
 		msg := data.(*telego.Message)
 		word := msg.Text
 		log.Printf("Removing word: %s", word)
-		success := context.Store.RemoveWord(word, context.ChatId)
+		success := context.Store.RemoveWord(word, types.BigInt(context.ChatId))
 		if success {
 			context.Bot.SendMessage(tu.Message(
 				tu.ID(context.ChatId),

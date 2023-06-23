@@ -66,6 +66,34 @@ func (s *Store) AddNewWord(word string, translate string, chatId int64, nextRemi
 	return true
 }
 
+func (s *Store) UpdateWord(word *db.WordModel, params ...db.WordSetParam) bool {
+	ctx := context.Background()
+	_, err := s.client.Word.FindMany(
+		db.Word.ChatID.Equals(word.ChatID),
+		db.Word.Word.Equals(word.Word),
+	).Update(
+		params...,
+	).Exec(ctx)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
+
+func (s *Store) RemoveWord(word string, chatId types.BigInt) bool {
+	ctx := context.Background()
+	_, err := s.client.Word.FindMany(
+		db.Word.ChatID.Equals(chatId),
+		db.Word.Word.Equals(word),
+	).Delete().Exec(ctx)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
+
 func (s *Store) HasWord(word string, chatId int64) bool {
 	ctx := context.Background()
 	_, err := s.client.Word.FindFirst(
@@ -89,20 +117,6 @@ func (s *Store) GetWords(chatId int64, offset int, limit int) []db.WordModel {
 		return nil
 	}
 	return words
-}
-
-// remove word from db
-func (s *Store) RemoveWord(word string, chatId int64) bool {
-	ctx := context.Background()
-	_, err := s.client.Word.FindMany(
-		db.Word.ChatID.Equals(types.BigInt(chatId)),
-		db.Word.Word.Equals(word),
-	).Delete().Exec(ctx)
-	if err != nil {
-		log.Println(err)
-		return false
-	}
-	return true
 }
 
 const max_words_by_time = 100
