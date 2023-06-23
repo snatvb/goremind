@@ -1,6 +1,7 @@
 package state
 
 import (
+	"goreminder/db"
 	"goreminder/keyboard"
 	"goreminder/state/events"
 
@@ -18,6 +19,8 @@ func (state Idle) Handle(_ *Context, event string, data interface{}) State {
 		return WordsView{}
 	case events.RemoveWord:
 		return RemoveWord{}
+	case events.Remind:
+		return RemindWord{Word: data.(*db.WordModel)}
 	default:
 		return state
 	}

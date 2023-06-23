@@ -10,6 +10,7 @@ const (
 	RemoveWord        = "RemoveWord"
 	WordList          = "WordList"
 	Back              = "Back"
+	Forgot            = "Forgot"
 )
 
 func WordsControls() *telego.InlineKeyboardMarkup {
@@ -30,5 +31,16 @@ func BackOnly() *telego.InlineKeyboardMarkup {
 	return tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
 			BackButton(),
+		))
+}
+
+func ForgotButton() telego.InlineKeyboardButton {
+	return tu.InlineKeyboardButton("Forgot").WithCallbackData(Forgot)
+}
+
+func ForgotOnly() *telego.InlineKeyboardMarkup {
+	return tu.InlineKeyboard(
+		tu.InlineKeyboardRow(
+			ForgotButton(),
 		))
 }

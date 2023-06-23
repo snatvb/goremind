@@ -21,7 +21,7 @@ type Reminder struct {
 	Clients *clients.Clients
 
 	channel chan *db.WordModel
-	exit    chan struct{}
+	closed  bool
 }
 
 func (r *Reminder) remind(word *db.WordModel) {
@@ -40,7 +40,13 @@ func (r *Reminder) takeRandWord(chatId int64, timeAt time.Time) *db.WordModel {
 }
 
 func (r *Reminder) run() {
-	for range r.exit {
+	log.Printf("Start reminder")
+	for {
+		if r.closed {
+			log.Printf("Reminder closed")
+			return
+		}
+
 		log.Printf("Remind...")
 		users := r.Store.GetUsers()
 
@@ -62,11 +68,13 @@ func (r *Reminder) run() {
 
 		log.Printf("Reminded")
 		time.Sleep(r.Options.Interval)
+
 	}
 }
 
 func (r *Reminder) Start() {
 	r.channel = make(chan *db.WordModel)
+	r.closed = false
 	go r.run()
 	go func() {
 		for word := range r.channel {
@@ -76,6 +84,7 @@ func (r *Reminder) Start() {
 }
 
 func (r *Reminder) Stop() {
+	log.Printf("Stop reminder")
 	close(r.channel)
-	close(r.exit)
+	r.closed = true
 }

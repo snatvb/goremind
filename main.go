@@ -60,6 +60,7 @@ func main() {
 	subscribeKeyboard(handler, users, keyboard.Back, events.Back)
 	subscribeKeyboard(handler, users, keyboard.WordList, events.WordList)
 	subscribeKeyboard(handler, users, keyboard.RemoveWord, events.RemoveWord)
+	subscribeKeyboard(handler, users, keyboard.Forgot, events.Forgot)
 
 	handler.Handle(func(bot *telego.Bot, update telego.Update) {
 		// Send message

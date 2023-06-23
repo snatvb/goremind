@@ -9,4 +9,5 @@ const (
 	WordList       = "WordList"
 	Back           = "Back"
 	Remind         = "Remind"
+	Forgot         = "Forgot"
 )
