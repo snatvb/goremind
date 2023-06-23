@@ -49,12 +49,12 @@ func (state RemindWord) handleIncorrect(ctx *Context) {
 	nextRememberAt := time.Now().Add(rememberIn)
 	ctx.Bot.SendMessage(tu.MessageWithEntities(
 		tu.ID(ctx.ChatId),
+		// utils.StringsToEntities(utils.SplitTranslations(state.Word.Translate))...,
 		utils.Prepend(
 			utils.StringsToEntities(utils.SplitTranslations(state.Word.Translate)),
 			tu.Entity("Incorrect! I remind you in "),
 			tu.Entity(rememberIn.String()).Code(),
 			tu.Entity(".\nCorrect answer: "),
-			tu.Entity(state.Word.Translate).Code(),
 		)...,
 	))
 
@@ -99,7 +99,6 @@ func (state RemindWord) handleCorrect(ctx *Context) {
 				tu.Entity("Success! I remind you in "),
 				tu.Entity(rememberIn.String()).Code(),
 				tu.Entity(".\nTranslations: "),
-				tu.Entity(state.Word.Translate).Code(),
 			)...,
 		))
 
