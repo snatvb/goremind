@@ -45,7 +45,32 @@ func (state RemindWord) handleTranslation(ctx *Context, msg *telego.Message) {
 		}
 	}
 
-	// ctx.Store.UpdateWord(word.ChatID, word.Word, word.Translate, time.Now().Add(firstLevel))
+	state.handleIncorrect(ctx)
+}
+
+func (state RemindWord) handleIncorrect(ctx *Context) {
+	rememberIn := config.Timings[0]
+	nextRememberAt := time.Now().Add(rememberIn)
+	ctx.Bot.SendMessage(tu.MessageWithEntities(
+		tu.ID(ctx.ChatId),
+		tu.Entity("Incorrect! I remind you in "),
+		tu.Entity(rememberIn.String()).Code(),
+		tu.Entity("."),
+	))
+
+	res := ctx.Store.UpdateWord(
+		state.Word,
+		db.Word.RememberLevel.Set(0),
+		db.Word.NextRemindAt.Set(types.DateTime(nextRememberAt)),
+	)
+
+	if !res {
+		ctx.Bot.SendMessage(tu.MessageWithEntities(
+			tu.ID(ctx.ChatId),
+			tu.Entity("Error: ").Bold(),
+			tu.Entity("Save updated word has been failed").Code(),
+		))
+	}
 }
 
 func (state RemindWord) handleCorrect(ctx *Context) {
@@ -53,15 +78,23 @@ func (state RemindWord) handleCorrect(ctx *Context) {
 	if nextLevel >= len(config.Timings) {
 		ctx.Bot.SendMessage(tu.MessageWithEntities(
 			tu.ID(ctx.ChatId),
-			tu.Entity("Success! You have remembered the word!"),
+			tu.Entity("🎉 Success! You have remembered the word! 🎊"),
 		))
-		ctx.Store.RemoveWord(state.Word.ID, state.Word.ChatID)
+
+		res := ctx.Store.RemoveWord(state.Word.Word, state.Word.ChatID)
+		if !res {
+			ctx.Bot.SendMessage(tu.MessageWithEntities(
+				tu.ID(ctx.ChatId),
+				tu.Entity("Error: ").Bold(),
+				tu.Entity("Removing word has been failed").Code(),
+			))
+		}
 	} else {
 		rememberIn := config.Timings[nextLevel]
 		nextRememberAt := time.Now().Add(rememberIn)
 		ctx.Bot.SendMessage(tu.MessageWithEntities(
 			tu.ID(ctx.ChatId),
-			tu.Entity("Success! You can try again in "),
+			tu.Entity("Success! I remind you in "),
 			tu.Entity(rememberIn.String()).Code(),
 			tu.Entity("."),
 		))
@@ -75,7 +108,8 @@ func (state RemindWord) handleCorrect(ctx *Context) {
 		if !res {
 			ctx.Bot.SendMessage(tu.MessageWithEntities(
 				tu.ID(ctx.ChatId),
-				tu.Entity("Error updating word :("),
+				tu.Entity("Error: ").Bold(),
+				tu.Entity("Save updated word has been failed").Code(),
 			))
 		}
 	}
@@ -97,7 +131,8 @@ func (state RemindWord) handleForgot(ctx *Context) {
 	if !res {
 		ctx.Bot.SendMessage(tu.MessageWithEntities(
 			tu.ID(ctx.ChatId),
-			tu.Entity("Error updating word :("),
+			tu.Entity("Error: ").Bold(),
+			tu.Entity("Save updated word has been failed").Code(),
 		))
 	}
 }

@@ -1,6 +1,7 @@
 package state
 
 import (
+	"fmt"
 	"goreminder/keyboard"
 	"goreminder/state/events"
 
@@ -21,7 +22,7 @@ func (state WordsView) OnEnter(fsm *FSM, context *Context, from State) {
 	words := context.Store.GetWords(context.ChatId, 0, 100)
 	wordsTextsMsg := "Words:\n"
 	for _, word := range words {
-		wordsTextsMsg += word.Word + "\n"
+		wordsTextsMsg += fmt.Sprintf("%s; Level: %d \n", word.Word, word.RememberLevel)
 	}
 	context.Bot.SendMessage(tu.Message(
 		tu.ID(context.ChatId),
