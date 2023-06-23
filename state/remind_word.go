@@ -55,7 +55,8 @@ func (state RemindWord) handleIncorrect(ctx *Context) {
 		tu.ID(ctx.ChatId),
 		tu.Entity("Incorrect! I remind you in "),
 		tu.Entity(rememberIn.String()).Code(),
-		tu.Entity("."),
+		tu.Entity(".\n Correct answer: "),
+		tu.Entity(state.Word.Translate).Code(),
 	))
 
 	res := ctx.Store.UpdateWord(
@@ -96,7 +97,8 @@ func (state RemindWord) handleCorrect(ctx *Context) {
 			tu.ID(ctx.ChatId),
 			tu.Entity("Success! I remind you in "),
 			tu.Entity(rememberIn.String()).Code(),
-			tu.Entity("."),
+			tu.Entity(".\n Correct answer: "),
+			tu.Entity(state.Word.Translate).Code(),
 		))
 
 		res := ctx.Store.UpdateWord(
@@ -121,7 +123,8 @@ func (state RemindWord) handleForgot(ctx *Context) {
 
 	ctx.Bot.SendMessage(tu.MessageWithEntities(
 		tu.ID(ctx.ChatId),
-		tu.Entity("It's ok. You can try again later."),
+		tu.Entity("It's ok. You can try again later.\nCorrect answer: "),
+		tu.Entity(state.Word.Translate).Code(),
 	))
 
 	res := ctx.Store.UpdateWord(word, db.Word.NextRemindAt.Set(
