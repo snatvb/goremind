@@ -6,6 +6,7 @@ COPY . /goreminder
 WORKDIR /goreminder
 
 RUN go mod download
+RUN go run github.com/steebchen/prisma-client-go db push
 RUN go build -o ./.bin/app ./main.go
 
 #lightweight docker container with binary
