@@ -42,8 +42,7 @@ jobs:
               with:
                   host: ${{ secrets.HOST }}
                   username: ${{ secrets.USERNAME }}
-                  key: ${{ secrets.SSHKEY }}
-                  port: ${{ secrets.PORT }}
+                  key: ${{ secrets.SSH_KEY }}
                   envs: IMAGE_NAME,REGISTRY,CONTAINER_NAME,GITHUB_SHA
                   script: |
                       # Login into DigitalOcean registry
