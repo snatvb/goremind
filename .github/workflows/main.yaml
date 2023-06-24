@@ -1,0 +1,68 @@
+name: CI
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+        branches: [master]
+
+env:
+    REGISTRY: 'registry.digitalocean.com/snatvb-registry'
+    IMAGE_NAME: 'goreminder-bot'
+    CONTAINER_NAME: 'goreminder'
+
+jobs:
+    build_and_push:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout master
+              uses: actions/checkout@v2
+
+            - name: Build container image
+              run: docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:reminder-$(echo $GITHUB_SHA | head -c7) .
+
+            - name: Install doctl
+              uses: digitalocean/action-doctl@v2
+              with:
+                  token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+            - name: Login in to DigitalOcean registry
+              run: doctl registry login --expiry-seconds 300
+
+            - name: Login to registry
+              uses: docker/login-action@v1
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ secrets.DIGITALOCEAN_REGISTRY_USERNAME }}
+                  password: ${{ secrets.DIGITALOCEAN_REGISTRY_PASSWORD }}
+
+            - name: Push image to registry
+              run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:reminder-$(echo $GITHUB_SHA | head -c7)
+
+    deploy:
+        runs-on: ubuntu-latest
+        needs: build_and_push
+
+        steps:
+            - name: Deploy to DigitalOcean
+              uses: appleboy/ssh-action@0.1.10
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  key: ${{ secrets.SSHKEY }}
+                  port: ${{ secrets.PORT }}
+                  script: |
+                      # Login into DigitalOcean registry
+                      docker login -u ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}} -p ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}} $(echo $REGISTRY)
+                      # Stop container
+                      docker stop $(echo $CONTAINER_NAME)
+                      # Remove container
+                      docker rm $(echo $CONTAINER_NAME)
+                      # Set inv variables
+                      export TOKEN=$(echo $TOKEN)
+                      # Run new container
+                      docker run -e TOKEN -d \
+                      --restart=always \
+                      --publish 3500:3500 \
+                      --name $(echo $CONTAINER_NAME) \
+                      $(echo $REGISTRY)/$(echo $IMAGE_NAME):reminder-$(echo $GITHUB_SHA | head -c7)
