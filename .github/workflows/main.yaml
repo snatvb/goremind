@@ -44,6 +44,7 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.SSHKEY }}
                   port: ${{ secrets.PORT }}
+                  envs: IMAGE_NAME,REGISTRY,CONTAINER_NAME,GITHUB_SHA
                   script: |
                       # Login into DigitalOcean registry
                       docker login -u ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}} -p ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}} $(echo $REGISTRY)
@@ -52,7 +53,7 @@ jobs:
                       # Remove container
                       docker rm $(echo $CONTAINER_NAME)
                       # Set inv variables
-                      export TOKEN=$(echo $TOKEN)
+                      export TOKEN=${{ secrets.TOKEN }}
                       # Run new container
                       docker run -e TOKEN -d \
                       --restart=always \
