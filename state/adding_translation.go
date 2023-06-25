@@ -1,6 +1,7 @@
 package state
 
 import (
+	"goreminder/config"
 	"goreminder/keyboard"
 	"goreminder/state/events"
 	"goreminder/utils"
@@ -30,7 +31,7 @@ func (state AddingTranslation) Handle(ctx *Context, event string, data interface
 		}
 
 		now := time.Now()
-		inHour := now.Add(time.Minute)
+		inHour := now.Add(config.Timings[0])
 		success := ctx.Store.AddNewWord(state.word, utils.JoinStrings(translations), msg.Chat.ID, inHour)
 		if success {
 			log.Printf("AddingTranslation: %s added", state.word)
