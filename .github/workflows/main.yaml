@@ -57,5 +57,6 @@ jobs:
                       docker run -e TOKEN -d \
                       --restart=always \
                       --publish 3500:3500 \
+                      -v ${PWD}/.database:/root/.database \
                       --name $(echo $CONTAINER_NAME) \
                       $(echo $REGISTRY)/$(echo $IMAGE_NAME):reminder-$(echo $GITHUB_SHA | head -c7)

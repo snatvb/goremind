@@ -1,0 +1,8 @@
+{
+    "scripts": {
+        "migrate": "prisma migrate deploy"
+    },
+    "dependencies": {
+        "prisma": "4.16.1"
+    }
+}

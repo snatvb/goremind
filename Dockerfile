@@ -6,16 +6,25 @@ COPY . /goreminder
 WORKDIR /goreminder
 
 RUN go mod download
-RUN go run github.com/steebchen/prisma-client-go db push
+RUN go run github.com/steebchen/prisma-client-go generate
 RUN go build -o ./.bin/app ./main.go
 
 #lightweight docker container with binary
-FROM alpine:latest
+FROM node:20-alpine3.17
 
-WORKDIR /root/
+WORKDIR /root
 
-COPY --from=0 /goreminder/.bin/app .
+COPY --from=builder /goreminder/.bin/app .
+COPY --from=builder /goreminder/package.json .
+COPY --from=builder /goreminder/package-lock.json .
+COPY --from=builder /goreminder/migrations ./migrations
+COPY --from=builder /goreminder/schema.prisma .
+
+RUN node -v
+RUN npm -v
+RUN npm install
+
 
 EXPOSE 3500
 
-CMD [ "./app"]
+CMD npm run migrate && ./app

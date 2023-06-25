@@ -24,3 +24,7 @@ go.work
 
 .env
 *.db
+
+.bin
+node_modules
+.database
